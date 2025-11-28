@@ -17,7 +17,7 @@ def EF_calculation(v, parameter):
             (parameter.Epsilon * v**2 + parameter.Zita * v + parameter.Eta) * (1-parameter.RF))
 
 readpath_root = ".//Data_Truck"
-readfile = [join(readpath_root, f) for f in listdir(readpath_root)]       #每一天的文件夹列表 \Data_Truck\day
+readfile = [join(readpath_root, f) for f in listdir(readpath_root)]       # \Data_Truck\day
 
 writepath_root = './/Truck_Emission_day'
 # writefile = [join(writepath_root, f) for f in listdir(readpath_root)]     # \Truck_Emission\day
@@ -46,17 +46,14 @@ for date in tqdm(range(len(readfile))):
         Parameter = NOx_parameter[(NOx_parameter['weightmin'] <= (truckinf.weight[0]/1000)) & (NOx_parameter['weightmax'] > (truckinf.weight[0]/1000))\
                             & (NOx_parameter['ChinaStandard'] == truckinf.emission[0])]
         
-        # 单车数据集过小
         if len(data)<3:
             continue
         
-        #计算时间差值
         time_info = data['time_info'].apply(lambda x: time.mktime(time.strptime(str(x), '%Y-%m-%d %H:%M:%S')))
         time_diff = np.diff(time_info)
         time_diff = np.insert(time_diff, 0, 0)
         data['time_diff'] = time_diff
         
-        #计算经纬度差值
         longitude_1 = data['longitude'][1:].reset_index(drop=True)
         longitude_2 = data['longitude'][:-1].reset_index(drop=True)
         d_lon = abs(longitude_1 - longitude_2)
@@ -71,8 +68,7 @@ for date in tqdm(range(len(readfile))):
         # d_lat_1 = lat_0.append(d_lat).reset_index(drop=True)
         d_lat_1 = pd.concat([lat_0,d_lat]).reset_index(drop=True)
 
-        #根据经纬度差值计算距离
-        R = 6378.137        #单位是km
+        R = 6378.137        # km
         d_lat = d_lat*pi/180
         latitude_1 = latitude_1*pi/180
         latitude_2 = latitude_2*pi/180
@@ -81,8 +77,7 @@ for date in tqdm(range(len(readfile))):
         for i in range(len(data)-1):
             s.append( 2 * R * asin(sqrt((sin(d_lat[i]/2))**2 + cos(latitude_1[i])*cos(latitude_2[i])*(sin(d_lon[i]/2))**2 )) )
         data['distance'] = s 
-        
-        # 筛选
+    
         time_idenx = data.query('time_diff > 60').index
         
         data.loc[time_idenx, 'time_diff'] = 30
@@ -101,8 +96,8 @@ for date in tqdm(range(len(readfile))):
         segment = math.ceil(len(data)/dt)
         if segment>1:
             for i in range(segment-1):
-                distance_sum = data.loc[dt*i:dt*(i+1),'distance'].sum()       # 单位：km
-                time_sum = data.loc[dt*i:dt*(i+1),'time_diff'].sum() / 3600   # 单位：小时
+                distance_sum = data.loc[dt*i:dt*(i+1),'distance'].sum()       # unit: km
+                time_sum = data.loc[dt*i:dt*(i+1),'time_diff'].sum() / 3600   # unit: 小时
                 ave_speed = distance_sum/time_sum
                 EF = EF_calculation(ave_speed, Parameter)
                 em = EF * distance_sum
@@ -125,4 +120,5 @@ for date in tqdm(range(len(readfile))):
         
         em_day.append(data)
     EM = pd.concat(em_day)
+
     EM.to_csv(join(writepath_root, str(data.loc[0,'event_day'])+'.csv'), encoding='utf-8-sig', index=False)
