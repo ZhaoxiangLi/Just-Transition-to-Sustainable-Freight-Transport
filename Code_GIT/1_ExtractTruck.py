@@ -15,7 +15,7 @@ data_date = data_all.groupby(['event_day'],as_index=False)
 for group_name,group_data in tqdm(data_date):
     group_data.to_excel(join(datepath, str(group_name)+'.xlsx'), index=False)
 
-datefile = [i[:-5] for i in listdir(datepath)]      #日期文件夹列表
+datefile = [i[:-5] for i in listdir(datepath)]      # date file list
 pathfile = [join(datepath, f) for f in listdir(datepath)]
 writefile = [join(writepath, f) for f in datefile]
 for i in range(len(writefile)):
@@ -34,4 +34,5 @@ for i in tqdm(range(len(pathfile))):
     
     sub_data = data.groupby(['uid'],as_index=False)
     for group_name,group_data in tqdm(sub_data):
+
         group_data.to_csv(join(writefile[i], group_name+'.csv'), encoding='utf-8-sig', index = False)
