@@ -23,7 +23,7 @@ writepath_root = './/Truck_Emission_day'
 # writefile = [join(writepath_root, f) for f in listdir(readpath_root)]     # \Truck_Emission\day
 os.makedirs(writepath_root, exist_ok=True)
 
-TruckID_root = ".//Data//Truck_information_test.xlsx"
+TruckID_root = ".//Data//Truck_information.xlsx"
 TrueruckID = pd.read_excel(TruckID_root)
 
 NOx_parameter_path = ".//EmissionModel//HDT_NOx_parameter.xlsx"
@@ -122,3 +122,4 @@ for date in tqdm(range(len(readfile))):
     EM = pd.concat(em_day)
 
     EM.to_csv(join(writepath_root, str(data.loc[0,'event_day'])+'.csv'), encoding='utf-8-sig', index=False)
+
